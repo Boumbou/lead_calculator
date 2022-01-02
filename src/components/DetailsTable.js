@@ -15,10 +15,8 @@ export default function DetailsTable(props) {
     }
 
     const handleEdition = (params)=>{
-        // let resetData = processDataChanges(params, props.data);
-        // console.log(resetData);
-        console.log(params);
-        return 0;
+        let resetData = processDataChanges(params, props.data);
+        props.callBack(resetData);
     }    
 
     const columns = [

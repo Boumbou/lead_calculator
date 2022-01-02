@@ -5,6 +5,7 @@ const processToResult = (scenarioBase, data)=>{
     let resultData = {};
     let netToBrutRate = (100-77)/77;
     let fullChargedToBrut = (100-148)/148;
+    let grossToCost = (100 - 125) / 125;
 
     if(scenarioBase === 'SalaryBased'){
       if(data.salary.amount > 0 && margin > 0 && duration > 0){
@@ -74,7 +75,7 @@ const processToResult = (scenarioBase, data)=>{
             if(data.gross.period === 'total'){
                 dailyGross = dailyGross / duration;
             }
-            let maxDailyCost = dailyGross * (1-(margin/100));
+            let maxDailyCost = dailyGross * (1+grossToCost);
             let maxDailySalary = maxDailyCost * (1+fullChargedToBrut);
             let totalProfit = dailyGross * duration - maxDailyCost * duration;
             let dailyProfit = totalProfit / duration;
@@ -110,10 +111,32 @@ const processToResult = (scenarioBase, data)=>{
     return -1;
   }
 
-const processDataChanges = (params)=>{
+const processDataChanges = (params, changes)=>{
+  let result = {};
+  let netToBrutRate = (100-77)/77;
+  let fullChargedToBrut = (100-148)/148;
+
   switch (params.id) {
     case 1: //salaire net
       if(params.field === 'daily'){
+        let newSalary = params.value * (1+netToBrutRate);
+        // let wageCost = ((newSalary * changes.duration) * 1.48) + ((changes.salary.dailyExpenses + changes.salary.additionalFees) * changes.duration)
+        // let totalGross = wageCost * (1+(margin/100));
+        // let margin = (changes.gross.amount - wageCost) / wageCost
+        // let totalProfit = totalGross - wageCost;
+        // let dailyProfit = totalProfit / duration;
+
+        result = {
+          ...changes,
+          salary:{
+            ...changes.salary,
+            amount: newSalary
+          },
+          contractorCosts:{
+            ...changes.contractorCosts,
+            amount: changes.amount + (newSalary - (changes.amount + changes.additionalCost))
+          }
+        }
 
       }else if(params.field === 'monthly'){
 
@@ -226,7 +249,7 @@ const processDataChanges = (params)=>{
       break;
   }
 
-  return 'it is done';
+  return result;
 }
 
   export {processToResult, processDataChanges};
